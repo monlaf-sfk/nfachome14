@@ -11,17 +11,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js ${{ matrix.node-version }}
+      - name: Set up Node.js 18
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 18
 
       - name: Install dependencies (frontend)
         working-directory: ./frontend
@@ -29,15 +26,19 @@ jobs:
 
       - name: Build frontend
         working-directory: ./frontend
-        run: npm run build
+        run: npm run dev
 
-      - name: Install dependencies (backend)
-        working-directory: ./backend
-        run: npm install
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build backend
-        working-directory: ./backend
-        run: npm run build
+      - name: Set up Docker Compose
+        run: docker-compose --version
+
+      - name: Start database
+        run: docker-compose up -d db
+
+      - name: Build and start app
+        run: docker-compose up --build app
 
       # Add your deployment steps below
       - name: Deploy
