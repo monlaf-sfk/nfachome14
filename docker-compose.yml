@@ -5,13 +5,20 @@ services:
     build: .
     ports:
       - "8000:8000"
-    volumes:
-      - ./src:/app/src
     env_file:
       - .env
     depends_on:
       - db
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn backend.src.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3000:80"
+  #   depends_on:
+  #     - app
 
   db:
     image: postgres:15-alpine
