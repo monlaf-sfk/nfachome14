@@ -31,6 +31,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
      
       - name: Run backend tests (pytest)
         run: |
@@ -41,7 +45,7 @@ jobs:
           echo "DATABASE_URL=${DATABASE_URL}" >> .env
           docker-compose up -d db
           sleep 10  # wait for db
-          docker-compose up --build app
+          docker-compose run --rm app pytest
 
   frontend:
     runs-on: ubuntu-latest
