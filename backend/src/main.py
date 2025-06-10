@@ -25,17 +25,18 @@ async def on_startup():
 
 # --- CORS Configuration ---
 origins = [
-    "http://localhost",
+	"http://164.92.163.20"
+   "http://localhost",
     "http://localhost:3000", # Example frontend port
     "http://localhost:5173", # Example Vite frontend port
     "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173",
+     "http://127.0.0.1:5173",
     "https://nfachome14.vercel.app/"
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
