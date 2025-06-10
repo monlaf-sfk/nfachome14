@@ -30,7 +30,7 @@ origins = [
     "http://localhost:5173", # Example Vite frontend port
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
-    " https://6503-2a09-bac5-47ec-2dc-00-49-fa.ngrok-free.app"
+    "https://nfachome14.vercel.app/"
 ]
 
 app.add_middleware(

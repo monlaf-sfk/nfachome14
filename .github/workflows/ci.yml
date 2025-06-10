@@ -1,4 +1,4 @@
-name: CI
+name: CI Checks
 
 on:
   push:
@@ -7,59 +7,74 @@ on:
     branches: [main]
 
 jobs:
-  backend:
+  backend_checks: # Renamed for clarity
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: app_db
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres" --health-interval 10s --health-timeout 5s --health-retries 5
+    # Define static environment variables for the test database.
+    # These will be used to create the .env file for docker-compose.
     env:
-      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      POSTGRES_USER_TEST: ci_user        # Static test user
+      POSTGRES_PASSWORD_TEST: ci_password  # Static test password
+      POSTGRES_DB_TEST: ci_test_db       # Static test database name
+      # This DATABASE_URL should point to the 'db' service name as defined
+      # in your backend/docker-compose.yml (e.g., service named 'db').
+      DATABASE_URL_TEST: "postgresql+asyncpg://ci_user:ci_password@db:5432/ci_test_db"
+      # Add any other non-sensitive env vars your app might need for testing.
+      # E.g., SECRET_KEY_TEST: "a_non_production_test_secret"
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set up Python
+        # This step is useful if you run any Python scripts directly on the runner,
+        # but less critical if all Python execution is within Docker.
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
+
       - name: Install Docker Compose
         run: |
           sudo apt-get update
           sudo apt-get install -y docker-compose
-     
-      - name: Run backend tests (pytest)
-        run: |
-          cd backend
-          echo "POSTGRES_USER=${POSTGRES_USER}" > .env
-          echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" >> .env
-          echo "POSTGRES_DB=${POSTGRES_DB}" >> .env
-          echo "DATABASE_URL=${DATABASE_URL}" >> .env
-          docker-compose up -d db
-          sleep 10  # wait for db
-          docker-compose run --rm app pytest
 
-  frontend:
+      - name: Create .env file for backend Docker Compose
+        run: |
+          echo "Creating .env file in ./backend/"
+          echo "POSTGRES_USER=${POSTGRES_USER_TEST}" > ./backend/.env
+          echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD_TEST}" >> ./backend/.env
+          echo "POSTGRES_DB=${POSTGRES_DB_TEST}" >> ./backend/.env
+          echo "DATABASE_URL=${DATABASE_URL_TEST}" >> ./backend/.env
+          echo "Generated ./backend/.env file content:"
+          cat ./backend/.env
+
+      - name: Run backend tests with Docker Compose
+        working-directory: ./backend # Set working directory for docker-compose commands
+        run: |
+          echo "Starting database service (db) from docker-compose.yml..."
+          docker-compose up -d db
+          
+          echo "Waiting for database service to be ready..."
+          sleep 15 # Adjust sleep time if your DB takes longer to initialize or implement a proper health check wait
+          
+          echo "Building 'app' service (if needed) and running backend tests (pytest)..."
+          docker-compose run --rm app pytest
+          
+
+  frontend_checks: # Renamed for clarity
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-      - name: Install dependencies
-        run: |
-          cd frontend
-          npm install
-      - name: Build
-        run: |
-          cd frontend
-          npm run build
+          node-version: "20" # Or your preferred Node.js version
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend # Set working directory for npm commands
+        run: npm install
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
