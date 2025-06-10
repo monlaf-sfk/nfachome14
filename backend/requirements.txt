@@ -10,4 +10,6 @@ python-dotenv
 alembic
 greenlet
 bcrypt==4.0.1
+pytest
+
 
