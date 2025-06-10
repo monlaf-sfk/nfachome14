@@ -48,7 +48,7 @@ jobs:
           cat ./backend/.env
 
       - name: Run backend tests with Docker Compose
-        working-directory: ./backend # Set working directory for docker-compose commands
+        working-directory: ./backend  
         run: |
           echo "Starting database service (db) from docker-compose.yml..."
           docker-compose up -d db
@@ -56,8 +56,7 @@ jobs:
           echo "Waiting for database service to be ready..."
           sleep 15 # Adjust sleep time if your DB takes longer to initialize or implement a proper health check wait
           
-          echo "Building 'app' service (if needed) and running backend tests (pytest)..."
-          docker-compose run --rm app pytest
+          docker-compose up --build app
           
 
   frontend_checks: # Renamed for clarity
