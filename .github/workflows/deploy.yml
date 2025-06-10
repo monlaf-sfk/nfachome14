@@ -37,15 +37,19 @@ jobs:
         run: |
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> backend/.env
           echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> backend/.env
-          
+          echo "ALGORITHM=${{ secrets.ALGORITHM }}" >> backend/.env
+          echo "ACCESS_TOKEN_EXPIRE_MINUTES=${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}" >> backend/.env
+
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> backend/.env
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> backend/.env
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> backend/.env
+
+
+      - name: Check Docker Compose version
+        run: docker compose version
 
       - name: Start database
-        working-directory: ./backend
-        run: docker compose up -d db
+        run: docker compose -f backend/docker-compose.yml up -d db
 
       - name: Build and start app
-        run: |
-          DATABASE_URL=${{ secrets.DATABASE_URL }} \
-          SECRET_KEY=${{ secrets.SECRET_KEY }} \
-          docker compose -f backend/docker-compose.yml up --build app
-
+        run: docker compose -f backend/docker-compose.yml up --build app
