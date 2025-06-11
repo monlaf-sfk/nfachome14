@@ -1,0 +1,1 @@
+# Assistant package for LLM/chatbot integrations (OpenAI, Gemini, Claude, etc.) 
