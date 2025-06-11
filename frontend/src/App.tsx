@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { LoginForm } from './components/Auth/LoginForm';
 import { RegisterForm } from './components/Auth/RegisterForm';
 import { Header } from './components/Layout/Header';
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { Profile } from './components/Profile/Profile';
+import ChatAssistant from './components/ChatAssistant';
 
 function App() {
   const { user, loading, error, login, register, logout, isAuthenticated } = useAuth();
@@ -47,6 +48,9 @@ function App() {
       
       <main>
         <Dashboard />
+        <div className="mt-8">
+          <ChatAssistant />
+        </div>
       </main>
 
       {showProfile && (

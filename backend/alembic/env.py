@@ -2,9 +2,10 @@ import os
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
-from src.database import Base
+
 from dotenv import load_dotenv
-from src.todo.models import Todo 
+
+from src.database import Base
 
 load_dotenv()
 

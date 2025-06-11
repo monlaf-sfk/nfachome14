@@ -8,6 +8,7 @@ from src.database import create_db_and_tables, Base
 from src.users import router as user_router
 from src.tasks import router as task_router
 from src.auth import router as auth_router
+from src.assistant import router as assistant_router
 
 # Import models to ensure they are registered with Base.metadata before table creation
 # This is crucial if your models are defined in different files but share the same Base
@@ -25,18 +26,18 @@ async def on_startup():
 
 # --- CORS Configuration ---
 origins = [
-	"http://164.92.163.20"
-   "http://localhost",
-    "http://localhost:3000", # Example frontend port
-    "http://localhost:5173", # Example Vite frontend port
+    "http://localhost",
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1",
+    "http://127.0.0.1:80",
     "http://127.0.0.1:3000",
-     "http://127.0.0.1:5173",
-    "https://nfachome14.vercel.app/"
+    "http://127.0.0.1:5173",
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -46,6 +47,7 @@ app.add_middleware(
 app.include_router(auth_router.router)
 app.include_router(user_router.router)
 app.include_router(task_router.router)
+app.include_router(assistant_router.router)
 
 
 @app.get("/")

@@ -6,11 +6,14 @@ class ApiClient {
 
   constructor(baseURL: string) {
     this.baseURL = baseURL;
+    // Load token from storage on initialization
     this.token = localStorage.getItem('token');
   }
-  public getBaseURL(): string { // Make it public
+
+  public getBaseURL(): string {
     return this.baseURL;
   }
+
   setToken(token: string) {
     this.token = token;
     localStorage.setItem('token', token);
@@ -32,7 +35,8 @@ class ApiClient {
     };
 
     if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`;
+      // Correctly use bracket notation for 'Authorization' header
+      headers['Authorization'] = `Bearer ${this.token}`;
     }
 
     const response = await fetch(url, {
@@ -40,14 +44,32 @@ class ApiClient {
       headers,
     });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || `HTTP error! status: ${response.status}`);
+    // --- START OF THE FIX ---
+
+    // Check for a 204 No Content response.
+    // This happens on a successful DELETE.
+    if (response.status === 204) {
+      // If there's no content, we can't call response.json().
+      // We return null, cast to the generic type T, to satisfy TypeScript.
+      // The calling function (e.g., deleteTodo) will receive this as a successful resolution.
+      return null as T;
     }
 
+    // --- END OF THE FIX ---
+
+    // Now, handle potential errors for all other responses.
+    if (!response.ok) {
+      // Try to parse error details from the body, but guard against it being empty.
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.detail || `HTTP error! status: ${response.status}`;
+      throw new Error(errorMessage);
+    }
+
+    // For all other successful responses (like 200 OK, 201 Created), parse the JSON body.
     return response.json();
   }
 
+  // No changes needed to the public methods below
   async get<T>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, { method: 'GET' });
   }
@@ -66,8 +88,11 @@ class ApiClient {
     });
   }
 
-  async delete<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: 'DELETE' });
+  // Note: The original had <T> here, but since DELETE returns nothing,
+  // we can be more specific. Let's make it Promise<void> for clarity.
+  async delete(endpoint: string): Promise<void> {
+    // We cast the result to void because we don't expect a return value.
+    await this.request<void>(endpoint, { method: 'DELETE' });
   }
 }
 

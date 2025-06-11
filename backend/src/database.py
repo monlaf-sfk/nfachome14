@@ -2,6 +2,8 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import declarative_base
 from src.core.config import settings
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
 
@@ -19,6 +21,10 @@ AsyncSessionLocal = async_sessionmaker(
     autoflush=False,
     expire_on_commit=False  
 )
+
+SYNC_SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("+asyncpg", "")
+sync_engine = create_engine(SYNC_SQLALCHEMY_DATABASE_URL)
+SyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
 
 Base = declarative_base()
 

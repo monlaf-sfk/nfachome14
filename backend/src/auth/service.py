@@ -11,6 +11,7 @@ async def authenticate_user(db: AsyncSession, email: str, password: str) -> user
     user = await user_service.get_user_by_email(db, email=email)
     if not user:
         return None
+    # Run the CPU-bound password verification in a thread pool to avoid blocking the event loop
     if not await run_in_threadpool(verify_password, password, user.hashed_password):
         return None
     return user
