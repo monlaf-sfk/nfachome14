@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     postgres_password: str = os.getenv("POSTGRES_PASSWORD", "")
     postgres_db: str = os.getenv("POSTGRES_DB", "todo")
 
+    frontend_url: str = os.getenv("FRONTEND_URL", "http://localhost:80")
     model_config = SettingsConfigDict(
         env_file=".env",
         extra='ignore'

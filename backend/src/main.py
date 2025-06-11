@@ -15,6 +15,7 @@ from src.assistant import router as assistant_router
 from src.users import models as user_models # noqa F401 - Tell linters it's used
 from src.tasks import models as task_models # noqa F401 - Tell linters it's used
 
+from src.core.config import settings
 
 app = FastAPI(title="Task Management API")
 
@@ -26,6 +27,7 @@ async def on_startup():
 
 # --- CORS Configuration ---
 origins = [
+    settings.frontend_url,
     "http://localhost",
     "http://localhost:3000",
     "http://localhost:5173",
@@ -33,6 +35,7 @@ origins = [
     "http://127.0.0.1:80",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
+
 ]
 
 app.add_middleware(
